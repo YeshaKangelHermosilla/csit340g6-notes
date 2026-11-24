@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import NoteCard from './NoteCard.jsx'
+
 const startingNotes = [
   {
     id: 1,
@@ -12,32 +13,33 @@ const startingNotes = [
     body: 'Practice writing one handler for many inputs.',
   },
 ]
-function Notes() {
-    const [notes, setNotes] = useState(() => {
-      const saved = localStorage.getItem('notes')
-      return saved ? JSON.parse(saved) : startingNotes
-})
 
- 
+function Notes() {
+  const [notes, setNotes] = useState(() => {
+    const saved = localStorage.getItem('notes')
+    return saved ? JSON.parse(saved) : startingNotes
+  })
 
   const [form, setForm] = useState({ title: '', body: '' })
   const [search, setSearch] = useState('')
-  const titleRef = useRef(null) 
+  const titleRef = useRef(null)
 
-    useEffect(() => {
-      localStorage.setItem('notes', JSON.stringify(notes))
-}, [notes])
+  useEffect(() => {
+    localStorage.setItem('notes', JSON.stringify(notes))
+  }, [notes])
 
-useEffect(() => {
-  const id = setTimeout(() => {
-    localStorage.setItem('draft', JSON.stringify(form))
-  }, 1000)
-  return () => clearTimeout(id)
-}, [form])
+  useEffect(() => {
+    const id = setTimeout(() => {
+      localStorage.setItem('draft', JSON.stringify(form))
+    }, 1000)
+    return () => clearTimeout(id)
+  }, [form])
 
-  const visibleNotes = notes.filter((note) =>
-    note.title.toLowerCase().includes(search.toLowerCase())
-  )
+  const visibleNotes = useMemo(() => {
+    return notes.filter((note) =>
+      note.title.toLowerCase().includes(search.toLowerCase())
+    )
+  }, [notes, search])
 
   function handleChange(event) {
     const { name, value } = event.target
@@ -83,7 +85,7 @@ useEffect(() => {
             name="title"
             value={form.title}
             onChange={handleChange}
-            placeholder="Title" 
+            placeholder="Title"
             className="h-[52px] w-full border border-[#e6e6e6] px-4 text-lg outline-none placeholder:text-black/40 placeholder:italic focus:border-[#cf7d7d]"
           />
           <textarea
